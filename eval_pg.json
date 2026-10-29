@@ -1,0 +1,292 @@
+{
+  "meta": {
+    "about": "Held-out evaluation set for the PG regulations build. Run with: python evaluate.py eval_pg.json pg",
+    "grading": "Do NOT trust the raw string-match score alone - read the FAILs. Many are correct answers that trip a must_not term (e.g. the answer says 'Fail grade' and trips a forbidden 'F'), or expected a figure phrased differently. The mechanical score is a proxy; the real score is by MEANING. Grade each answer against the clause it comes from.",
+    "source": "NIT Durgapur PG Regulations (MTech/MCA/MBA/MSc/MSW), up to 69th Senate (23.01.2023).",
+    "buckets": {
+      "PG-APP": "Single-fact lookups from the grade table (Appendix-II), SGPA/CGPA rules (Appendix-III), supplementary grade map (Appendix-IV) and class thresholds.",
+      "PG-PAR": "Paraphrased clause questions - attendance, exam, leave, duration, admission.",
+      "PG-OOS": "Out of scope - not in the regulations; the bot should decline and point to the Academic Section, not invent a figure.",
+      "PG-PART": "Completeness - the answer must include every item in a list, not just an example.",
+      "PG-MT": "Multi-turn - the final answer is scored; tests carrying context without confusing adjacent facts."
+    },
+    "grade_table_ref": "90+ Ex/10, 80-89 A/9, 70-79 B/8, 60-69 C/7, 50-59 D/6, 35-49 P/5, below 35 F/0."
+  },
+  "cases": [
+    {
+      "id": "PG-APP-01",
+      "turns": ["I scored 72 in a theory subject. What letter grade and grade point do I get?"],
+      "expected": ["B", "8"],
+      "forbidden": ["C", "9"],
+      "grading_note": "70-79 -> B, grade point 8."
+    },
+    {
+      "id": "PG-APP-02",
+      "turns": ["What grade and grade point correspond to 88 marks in a theory course?"],
+      "expected": ["9"],
+      "forbidden": ["B", "10"],
+      "grading_note": "80-89 -> A, grade point 9. Letter A is not forbidden-checked because 'a' collides with the article."
+    },
+    {
+      "id": "PG-APP-03",
+      "turns": ["I got 55 marks. What is my grade and grade points?"],
+      "expected": ["D", "6"],
+      "forbidden": ["P", "C", "7"],
+      "grading_note": "50-59 -> D, grade point 6."
+    },
+    {
+      "id": "PG-APP-04",
+      "turns": ["What grade is 40 marks in a theory paper, and how many grade points?"],
+      "expected": ["P", "5"],
+      "forbidden": ["F", "D", "6"],
+      "grading_note": "35-49 -> P (Pass), grade point 5. P is the lowest pass grade."
+    },
+    {
+      "id": "PG-APP-05",
+      "turns": ["I scored 30 in a theory subject. What grade is that?"],
+      "expected": ["F", "0"],
+      "forbidden": ["P", "5"],
+      "grading_note": "Below 35 -> F, grade point 0."
+    },
+    {
+      "id": "PG-APP-06",
+      "turns": ["What grade and grade point does 95 marks earn?"],
+      "expected": ["Ex", "10"],
+      "forbidden": ["9"],
+      "grading_note": "90 and above -> Ex, grade point 10."
+    },
+    {
+      "id": "PG-APP-07",
+      "turns": ["Below what mark is a theory paper given an F grade?"],
+      "expected": ["35"],
+      "forbidden": ["50", "25"],
+      "grading_note": "Cut-off for F in theory papers is 35 (Appendix-II)."
+    },
+    {
+      "id": "PG-APP-08",
+      "turns": ["What is the cut-off mark below which a sessional paper is failed (F grade)?"],
+      "expected": ["50"],
+      "forbidden": ["35"],
+      "grading_note": "Cut-off for F in sessional papers is 50 (Appendix-II)."
+    },
+    {
+      "id": "PG-APP-09",
+      "turns": ["If I scored a B and clear the subject in the supplementary examination, what grade gets recorded?"],
+      "expected": ["C"],
+      "forbidden": ["B", "D"],
+      "grading_note": "Supplementary grade is one letter lower, not below P: B -> C (Appendix-IV)."
+    },
+    {
+      "id": "PG-APP-10",
+      "turns": ["If my supplementary result works out to a P, is it reduced any further?"],
+      "expected": ["P"],
+      "forbidden": ["F"],
+      "grading_note": "Reduction is 'not below P', so P stays P (Appendix-IV)."
+    },
+    {
+      "id": "PG-APP-11",
+      "turns": ["What is the maximum possible SGPA or CGPA?"],
+      "expected": ["10"],
+      "forbidden": ["100"],
+      "grading_note": "Maximum possible SGPA and CGPA is 10.00 (Appendix-III)."
+    },
+    {
+      "id": "PG-APP-12",
+      "turns": ["What CGPA do I need for a First Class?"],
+      "expected": ["6.50"],
+      "forbidden": ["5.00"],
+      "grading_note": "First Class: CGPA equal to or more than 6.50 (Clause 11.4)."
+    },
+    {
+      "id": "PG-APP-13",
+      "turns": ["What CGPA range counts as Second Class?"],
+      "expected": ["5.00", "6.50"],
+      "forbidden": [],
+      "grading_note": "Second Class: CGPA 5.00 or more but less than 6.50 (Clause 11.4)."
+    },
+    {
+      "id": "PG-APP-14",
+      "turns": ["What is the minimum CGPA required to be awarded the PG degree?"],
+      "expected": ["5.00"],
+      "forbidden": ["6.50"],
+      "grading_note": "Graduation needs CGPA 5.00 or higher and minimum grade P in every subject (Clause 13.1)."
+    },
+    {
+      "id": "PG-APP-15",
+      "turns": ["What transitional grade symbol is used when a student is absent?"],
+      "expected": ["X"],
+      "forbidden": ["RA", "W"],
+      "grading_note": "X = Absent (Appendix-III). I is not forbidden-checked ('I' collides with the pronoun)."
+    },
+    {
+      "id": "PG-APP-16",
+      "turns": ["What does an 'I' grade mean?"],
+      "expected": ["Incomplete"],
+      "forbidden": ["Absent"],
+      "grading_note": "I = Incomplete assessment (Appendix-III)."
+    },
+    {
+      "id": "PG-APP-17",
+      "turns": ["How is CGPA converted to percentage of marks?"],
+      "expected": ["0.5", "10"],
+      "forbidden": [],
+      "grading_note": "% of Marks = (CGPA - 0.5) x 10.00 (Appendix-III)."
+    },
+    {
+      "id": "PG-PAR-01",
+      "turns": ["My attendance in a theory course is 60%. What happens to my grade?"],
+      "expected": ["one grade", "reduction"],
+      "forbidden": ["two grades", "debarred"],
+      "grading_note": "60% is <75% but not <50% -> reduction of one grade (Clause 9.7)."
+    },
+    {
+      "id": "PG-PAR-02",
+      "turns": ["What happens if my attendance in a course is below 25%?"],
+      "expected": ["debarred"],
+      "forbidden": ["one grade", "two grades"],
+      "grading_note": "Attendance <25% -> debarred from the end-semester examination (Clause 9.7)."
+    },
+    {
+      "id": "PG-PAR-03",
+      "turns": ["How long is the end-term examination?"],
+      "expected": ["3 hours"],
+      "forbidden": ["90", "1.5"],
+      "grading_note": "End-term exam duration is 3 hours / 180 minutes (Clause 11.2h). '180' also acceptable."
+    },
+    {
+      "id": "PG-PAR-04",
+      "turns": ["What is the duration of the mid-term examination?"],
+      "expected": ["90"],
+      "forbidden": ["180", "3 hours"],
+      "grading_note": "Mid-term exam is 1.5 hours / 90 minutes (Clause 11.2h). '1.5 hours' also acceptable."
+    },
+    {
+      "id": "PG-PAR-05",
+      "turns": ["How many days of leave is a PG scholarship holder allowed in a year?"],
+      "expected": ["30"],
+      "forbidden": ["15", "60"],
+      "grading_note": "PG students with scholarship: maximum 30 days of leave in a calendar year (Clause 10.1)."
+    },
+    {
+      "id": "PG-PAR-06",
+      "turns": ["What percentage weightage does the end-term examination carry in a theory course?"],
+      "expected": ["60"],
+      "forbidden": ["25", "15"],
+      "grading_note": "Theory course weightage: CA 15%, Mid-term 25%, End-term 60% (Clause 11.2f)."
+    },
+    {
+      "id": "PG-PAR-07",
+      "turns": ["What is the maximum permissible duration, in semesters, to finish the M.Tech programme?"],
+      "expected": ["6"],
+      "forbidden": ["4", "8"],
+      "grading_note": "M.Tech: normal 4 semesters, maximum permissible 6 (Clause 13.3 table)."
+    },
+    {
+      "id": "PG-PAR-08",
+      "turns": ["What is the maximum permissible number of semesters for the MCA programme?"],
+      "expected": ["8"],
+      "forbidden": ["6"],
+      "grading_note": "MCA: normal 6 semesters, maximum permissible 8 (Clause 13.3 table)."
+    },
+    {
+      "id": "PG-PAR-09",
+      "turns": ["What qualifying test score is mandatory for admission to the MBA programme?"],
+      "expected": ["CAT", "MAT", "XAT"],
+      "forbidden": ["GATE"],
+      "grading_note": "A qualifying CAT/MAT/XAT score is mandatory for MBA admission (Clause 2.3d)."
+    },
+    {
+      "id": "PG-PAR-10",
+      "turns": ["What happens if I fail to appear in the end-term examination of a subject?"],
+      "expected": ["Failed", "supplementary"],
+      "forbidden": [],
+      "grading_note": "Declared 'Failed' in that subject and permitted supplementary with a penalty of one letter grade, not below P (Clause 12.3c)."
+    },
+    {
+      "id": "PG-PAR-11",
+      "turns": ["An M.Tech student converts to off-campus mode after recruitment. Over how many semesters can they complete the final-year project?"],
+      "expected": ["four semesters"],
+      "forbidden": ["two semesters"],
+      "grading_note": "Such students may complete the final-year project in four semesters instead of two, paying Institute fees each semester (Clause 13.3)."
+    },
+    {
+      "id": "PG-PAR-12",
+      "turns": ["For remedial classes, what is the minimum number of registered students required per course?"],
+      "expected": ["10"],
+      "forbidden": ["20"],
+      "grading_note": "Remedial classes need a minimum of 10 students per course; maximum 20 class hours (Clause 12.16)."
+    },
+    {
+      "id": "PG-OOS-01",
+      "turns": ["What is the Wi-Fi password for the PG hostel?"],
+      "expected": ["Academic Section"],
+      "forbidden": [],
+      "grading_note": "Out of scope. The bot should say this is not in the regulations and point to the Academic Section, not invent a password."
+    },
+    {
+      "id": "PG-OOS-02",
+      "turns": ["What was the average placement salary for M.Tech students last year?"],
+      "expected": ["Academic Section"],
+      "forbidden": [],
+      "grading_note": "Out of scope. No placement figures are in the regulations; the bot should decline rather than quote a number."
+    },
+    {
+      "id": "PG-OOS-03",
+      "turns": ["Who is the current Head of the Mechanical Engineering department?"],
+      "expected": ["Academic Section"],
+      "forbidden": [],
+      "grading_note": "Out of scope. The regulations name roles, not current office holders; the bot should decline, not name a person."
+    },
+    {
+      "id": "PG-OOS-04",
+      "turns": ["Exactly how many rupees is the PG tuition fee per semester?"],
+      "expected": ["Academic Section"],
+      "forbidden": [],
+      "grading_note": "Out of scope. Fees are 'as prescribed from time to time', no rupee figure is in the regulations; the bot should decline, not invent an amount."
+    },
+    {
+      "id": "PG-PART-01",
+      "turns": ["List all the assessment components and their weightage for a theory course."],
+      "expected": ["Continuous Assessment", "15", "Mid", "25", "End", "60"],
+      "forbidden": [],
+      "grading_note": "Must include ALL three: Continuous Assessment 15%, Mid-term 25%, End-term 60% (Clause 11.2f). Missing any one is an incomplete answer."
+    },
+    {
+      "id": "PG-PART-02",
+      "turns": ["What are the normal and maximum permissible durations, in semesters, for the MCA programme?"],
+      "expected": ["6", "8"],
+      "forbidden": [],
+      "grading_note": "Both figures required: normal 6 semesters, maximum 8 (Clause 13.3 table)."
+    },
+    {
+      "id": "PG-MT-01",
+      "turns": [
+        "I scored 85 in a theory paper. What grade is that?",
+        "And how many grade points does that carry?"
+      ],
+      "expected": ["9"],
+      "forbidden": ["8", "10"],
+      "grading_note": "80-89 -> A (turn 1), grade point 9 (turn 2). Final answer scored; tests carrying the grade across turns."
+    },
+    {
+      "id": "PG-MT-02",
+      "turns": [
+        "What is the minimum CGPA needed to be awarded the degree?",
+        "And what CGPA do I need for First Class?"
+      ],
+      "expected": ["6.50"],
+      "forbidden": ["5.00"],
+      "grading_note": "Turn 1 = 5.00 (graduation), turn 2 = 6.50 (First Class). Final answer must give 6.50 and must NOT repeat 5.00 - the two thresholds must not be confused (Clauses 13.1, 11.4)."
+    },
+    {
+      "id": "PG-MT-03",
+      "turns": [
+        "I got a B in a course but I want to improve it through the supplementary examination.",
+        "If I score an A in that supplementary, what grade will finally be recorded?"
+      ],
+      "expected": ["B"],
+      "forbidden": [],
+      "grading_note": "Supplementary grade is one letter lower, not below P: an A in the supplementary is recorded as B (Appendix-IV). Forbidden left empty on purpose - forbidding 'A' would collide with the article 'a' and false-FAIL every run; judge by meaning that the final grade is B, not A."
+    }
+  ]
+}

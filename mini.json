@@ -1,0 +1,4 @@
+{"cases": [
+  {"id":"PAR-03","turns":["What's the lowest CGPA I can have and still actually graduate?"],"expected_facts":["5.00"],"must_not":["not specified"]},
+  {"id":"APP-10","turns":["I failed a theory paper, then reappeared in the supplementary exam and my marks there would normally be an A. What grade actually goes on my card?"],"expected_facts":["B"],"must_not":[]}
+]}

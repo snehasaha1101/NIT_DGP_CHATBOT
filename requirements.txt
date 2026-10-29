@@ -1,0 +1,17 @@
+# Core app
+streamlit
+python-dotenv
+
+# RAG pipeline
+langchain
+langchain-core
+langchain-community
+langchain-chroma
+langchain-groq
+chromadb
+sentence-transformers
+
+# PDF parsing - only needed to REBUILD the vector stores (ingest.py).
+# The deployed app uses the prebuilt stores and never calls this, so you can
+# delete this line for a leaner, faster Cloud build if you commit the stores.
+llama-parse

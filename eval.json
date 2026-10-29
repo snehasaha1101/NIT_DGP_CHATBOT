@@ -1,0 +1,340 @@
+{
+  "meta": {
+    "name": "NIT DGP Chatbot — Held-out Evaluation Set",
+    "purpose": "Measure the RAG pipeline WITHOUT rewarding memorisation. None of these reuse the FAQ knowledge-base wording that was ingested. Applied cases force retrieval + reasoning; out-of-scope cases test honest refusal.",
+    "source_of_truth": "UG Regulations (amended up to 70th Senate, 02.08.2023).",
+    "buckets": {
+      "applied": "Scenario/numeric questions. The answer is not a stored string; the model must map a value to a rule. Curation cannot echo its way to a correct answer.",
+      "paraphrased": "In-scope rules asked in different words from the FAQ.",
+      "out_of_scope": "Facts the regulations do NOT contain. A correct response REFUSES / says it's not in the regulations. Uncheatable by curation — there is nothing to curate.",
+      "partial": "The rule exists but a specific number/detail is absent from the PDF. Correct = state the rule, do NOT invent the missing value.",
+      "multi_turn": "Second turn uses a pronoun/ellipsis. Tests the contextualize-question step in app.py."
+    },
+    "grading": {
+      "method": "Do NOT use exact string match — that rewards echoing. Check each string in expected_facts is present in meaning (a number, grade letter, or yes/no), and that nothing in must_not appears.",
+      "score_two_axes_separately": "Retrieval: did the right chunk appear in the retrieved context (inspect retriever output)? Answer: given that context, is the final answer correct and faithful? Curation fixes retrieval; you still verify answer.",
+      "report": "Run this same set against (a) the baseline pipeline and (b) the improved pipeline. Report the before/after delta per bucket — that delta is the evaluation."
+    }
+  },
+  "cases": [
+    {
+      "id": "APP-01",
+      "bucket": "applied",
+      "turns": ["I scored 72 in a theory subject. What letter grade is that and how many grade points?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["B", "8"],
+      "must_not": ["A", "9", "C", "7"],
+      "clause": "Appendix III",
+      "grading_note": "72 is in the 70-79 band -> B -> 8 points. Requires mapping a mark to a band, not echoing the table."
+    },
+    {
+      "id": "APP-02",
+      "bucket": "applied",
+      "turns": ["If I get 47 marks in a theory paper, do I pass, and what grade?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["pass", "P", "5"],
+      "must_not": ["fail", "F"],
+      "clause": "Appendix III",
+      "grading_note": "35-49 -> P (pass) -> 5 points. Cutoff for F is below 35."
+    },
+    {
+      "id": "APP-03",
+      "bucket": "applied",
+      "turns": ["I got 33 in a theory exam. What happens to my grade?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["F", "fail", "0"],
+      "must_not": ["P", "pass"],
+      "clause": "Appendix III",
+      "grading_note": "Below 35 in theory -> F -> 0 points."
+    },
+    {
+      "id": "APP-04",
+      "bucket": "applied",
+      "turns": ["My attendance in a theory course is 55%. Is there any penalty?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["one grade", "reduction"],
+      "must_not": ["debarred", "two grade"],
+      "clause": "Clause 10.7",
+      "grading_note": "Below 75% but not below 50% -> reduction of one grade."
+    },
+    {
+      "id": "APP-05",
+      "bucket": "applied",
+      "turns": ["What if my attendance drops to 40% in that course?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["two grade", "reduction"],
+      "must_not": ["one grade", "debarred"],
+      "clause": "Clause 10.7",
+      "grading_note": "Below 50% but not below 25% -> reduction of two grades."
+    },
+    {
+      "id": "APP-06",
+      "bucket": "applied",
+      "turns": ["I only attended 20% of a theory course. Can I still sit the end-semester exam?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["debarred", "no", "re-register", "backlog"],
+      "must_not": ["one grade", "two grade"],
+      "clause": "Clause 10.7",
+      "grading_note": "Below 25% -> debarred from end-sem; must re-register as a regular/backlog course next corresponding semester with one grade reduced."
+    },
+    {
+      "id": "APP-07",
+      "bucket": "applied",
+      "turns": ["My final CGPA is 6.8. What class of degree do I get?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["First Class"],
+      "must_not": ["Distinction", "Second Class"],
+      "clause": "Clause 11.7",
+      "grading_note": "CGPA >= 6.50 but < 8.00 -> First Class (not Distinction, which needs >= 8.00 with all cleared in regular exams)."
+    },
+    {
+      "id": "APP-08",
+      "bucket": "applied",
+      "turns": ["I finished with CGPA 8.2, cleared every course in the regular exams, no disciplinary action. What class?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["First Class with Distinction", "Distinction"],
+      "must_not": ["Second Class"],
+      "clause": "Clause 11.7",
+      "grading_note": "CGPA >= 8.00 with all courses cleared in regular exams and no disciplinary conviction -> First Class with Distinction."
+    },
+    {
+      "id": "APP-09",
+      "bucket": "applied",
+      "turns": ["My CGPA is 8.0. What percentage is that?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["75"],
+      "must_not": ["80", "85"],
+      "clause": "Appendix IV.4",
+      "grading_note": "% = (CGPA - 0.5) x 10 = (8.0 - 0.5) x 10 = 75%. Must apply the formula, not guess."
+    },
+    {
+      "id": "APP-10",
+      "bucket": "applied",
+      "turns": ["I failed a theory paper, then reappeared in the supplementary exam and my marks there would normally be an A. What grade actually goes on my card?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["B", "one letter lower", "not below P"],
+      "must_not": ["A"],
+      "clause": "Appendix V.5",
+      "grading_note": "Supplementary grade is dropped one letter but not below P: A -> B."
+    },
+    {
+      "id": "APP-11",
+      "bucket": "applied",
+      "turns": ["I'm General category, cleared everything first attempt, SGPA 9.1 in semester 1 and 8.9 in semester 2. Am I eligible for a branch change?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["no", "9.00", "both"],
+      "must_not": ["yes, eligible"],
+      "clause": "Appendix I",
+      "grading_note": "General/OBC/EWS need SGPA >= 9.00 in BOTH sem 1 and sem 2. Sem 2 = 8.9 < 9.00 -> not eligible. Edge case; a memorised 'branch change needs high SGPA' answer will get this wrong."
+    },
+    {
+      "id": "APP-12",
+      "bucket": "applied",
+      "turns": ["I'm SC category with SGPA 8.6 and 8.7 in the first two semesters, all first attempt. Can I apply for a branch change?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["yes", "8.50"],
+      "must_not": ["no", "not eligible"],
+      "clause": "Appendix I",
+      "grading_note": "SC/ST need SGPA >= 8.50 in both semesters. 8.6 and 8.7 both qualify -> eligible."
+    },
+    {
+      "id": "APP-13",
+      "bucket": "applied",
+      "turns": ["I failed one laboratory course this semester. Do I have to repeat the whole year?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["no", "promoted", "backlog sessional", "next batch"],
+      "must_not": ["repeat the semester"],
+      "clause": "Clause 12.11",
+      "grading_note": "Failing ONE sessional/lab course -> promoted, re-register that course as backlog sessional with the next batch."
+    },
+    {
+      "id": "APP-14",
+      "bucket": "applied",
+      "turns": ["What if I fail two lab courses in the same semester?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["repeat the semester", "re-admission", "next batch"],
+      "must_not": ["promoted", "backlog only"],
+      "clause": "Clause 12.11",
+      "grading_note": "Failing MORE THAN ONE sessional/lab -> repeat the semester by taking re-admission with the next batch."
+    },
+    {
+      "id": "APP-15",
+      "bucket": "applied",
+      "turns": ["It's my fourth semester. How many backlog papers can I take alongside my regular courses?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["2", "two"],
+      "must_not": ["3", "unlimited"],
+      "clause": "Clause 7.4",
+      "grading_note": "From 3rd semester onward: all regular courses + a maximum of 2 backlog courses."
+    },
+    {
+      "id": "APP-16",
+      "bucket": "applied",
+      "turns": ["I'm in the 7th year of my 4-year B.Tech and still haven't finished. Can I still be awarded the degree?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["no", "6 years", "Senate approval"],
+      "must_not": ["yes, no limit"],
+      "clause": "Clause 13.3",
+      "grading_note": "Max is 6 years for a 4-year programme; one more year only with special Senate approval. 7th year is beyond the normal limit."
+    },
+    {
+      "id": "APP-17",
+      "bucket": "applied",
+      "turns": ["For a course that has both theory and a lab component, like a 3-0-2, how much do the end-term and the lab count for?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["End-term 40", "Laboratory 30", "40%", "30%"],
+      "must_not": ["60%", "end-term 60"],
+      "clause": "Clause 11.2(e)",
+      "grading_note": "Combined theory+sessional: CA 10%, Mid 20%, End-term 40%, Lab 30%. NOT the theory-only 15/25/60 split."
+    },
+    {
+      "id": "PAR-01",
+      "bucket": "paraphrased",
+      "turns": ["I was hospitalised and missed my end-semester exam. What are my options?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["supplementary", "Dean (Academic)", "condone", "full credit", "I grade"],
+      "must_not": [],
+      "clause": "Clause 12.3(c)",
+      "grading_note": "Normally: declared failed -> supplementary with one-grade penalty. With a documented compelling reason: appeal to Dean (Academic) via HOD; a subcommittee may condone the absence and allow the supplementary with FULL credit. 'I' grade until then."
+    },
+    {
+      "id": "PAR-02",
+      "bucket": "paraphrased",
+      "turns": ["Can I retake a subject I already passed just to improve my grade?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["no", "no provision"],
+      "must_not": ["yes, you can improve"],
+      "clause": "Appendix V.1-2",
+      "grading_note": "Supplementary/backlog exams are only for F or X (absent). No provision to re-sit a passed course for a better grade."
+    },
+    {
+      "id": "PAR-03",
+      "bucket": "paraphrased",
+      "turns": ["What's the lowest CGPA I can have and still actually graduate?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["5.00", "P in every course", "dues"],
+      "must_not": ["6.50", "4.00"],
+      "clause": "Clause 13.1",
+      "grading_note": "CGPA of 5.00 or higher, minimum grade P in every course, all dues cleared."
+    },
+    {
+      "id": "PAR-04",
+      "bucket": "paraphrased",
+      "turns": ["Once the registration window closes, can I still swap one of my subjects?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["no", "no changes"],
+      "must_not": ["yes"],
+      "clause": "Clause 7.3",
+      "grading_note": "Once registered, no changes in the course list are permitted."
+    },
+    {
+      "id": "PAR-05",
+      "bucket": "paraphrased",
+      "turns": ["My grade card shows 'I' next to a course. What does that mean?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["Incomplete"],
+      "must_not": ["Absent", "Withheld"],
+      "clause": "Appendix IV.1",
+      "grading_note": "I = Incomplete assessment. (X = Absent, RA = Reported Against, W = Withheld — distractors.)"
+    },
+    {
+      "id": "PAR-06",
+      "bucket": "paraphrased",
+      "turns": ["Roughly when does the autumn semester begin?"],
+      "expected_behavior": "answer",
+      "expected_facts": ["third week of July", "3rd week of July"],
+      "must_not": ["January"],
+      "clause": "Clause 8.2",
+      "grading_note": "Odd/Autumn semesters commence from the 3rd week of July."
+    },
+    {
+      "id": "OOS-01",
+      "bucket": "out_of_scope",
+      "turns": ["How do I apply for my official transcript, and what's the fee for it?"],
+      "expected_behavior": "refuse",
+      "expected_facts": ["not covered in the regulations", "Academic Section"],
+      "must_not": ["the fee is", "Rs.", "submit form number"],
+      "clause": "N/A",
+      "grading_note": "The regulations don't describe the transcript application procedure or fee. Correct = say it's not in the regulations / direct to the Academic Section. FAIL if it invents a procedure or amount."
+    },
+    {
+      "id": "OOS-02",
+      "bucket": "out_of_scope",
+      "turns": ["What's the current semester tuition fee amount?"],
+      "expected_behavior": "refuse",
+      "expected_facts": ["not specified", "prescribed by the Institute"],
+      "must_not": ["Rs.", "the fee is"],
+      "clause": "Clause 5.1",
+      "grading_note": "Regulations say fees are 'as prescribed by the Institute' but give no amount. Correct = state the rule, refuse to give a number. FAIL if a rupee figure appears."
+    },
+    {
+      "id": "OOS-03",
+      "bucket": "out_of_scope",
+      "turns": ["What are the exact dates for this year's mid-semester exams?"],
+      "expected_behavior": "refuse",
+      "expected_facts": ["not in the regulations", "Academic Calendar"],
+      "must_not": ["the dates are", "will be held on"],
+      "clause": "Clause 8.3",
+      "grading_note": "Specific dates live in the Academic Calendar notification, not these regulations. Correct = point to the Academic Calendar. FAIL if it fabricates dates."
+    },
+    {
+      "id": "OOS-04",
+      "bucket": "out_of_scope",
+      "turns": ["Who is the current Head of the Electrical Engineering department?"],
+      "expected_behavior": "refuse",
+      "expected_facts": ["not in the regulations", "don't know"],
+      "must_not": ["Prof.", "Dr."],
+      "clause": "N/A",
+      "grading_note": "No individual names in the regulations. FAIL if it invents a name."
+    },
+    {
+      "id": "PART-01",
+      "bucket": "partial",
+      "turns": ["Exactly how many total credits do I need to graduate with a B.Tech?"],
+      "expected_behavior": "partial",
+      "expected_facts": ["fixed by the Senate", "same for all branches", "not specified"],
+      "must_not": ["160 credits", "180 credits", "exactly"],
+      "clause": "Clause 13.2",
+      "grading_note": "The regulations state the total credit requirement is the same for all branches and is fixed by the Senate, but give NO number. Correct = explain the rule and say the specific figure isn't in this document. FAIL if it invents a credit count. This is the key faithfulness probe."
+    },
+    {
+      "id": "MT-01",
+      "bucket": "multi_turn",
+      "turns": [
+        "What SGPA do I need in the first two semesters to change branch as a General category student?",
+        "And for SC/ST students?"
+      ],
+      "expected_behavior": "answer",
+      "expected_facts": ["8.50", "both semesters"],
+      "must_not": ["9.00 for SC"],
+      "clause": "Appendix I",
+      "grading_note": "Turn 1 answer: >= 9.00 in both semesters. Turn 2 must resolve 'for SC/ST students?' to the branch-change SGPA and return >= 8.50 in both. Tests the contextualize-question step."
+    },
+    {
+      "id": "MT-02",
+      "bucket": "multi_turn",
+      "turns": [
+        "I failed a theory paper. How do I clear it?",
+        "Will there be any penalty on my grade?"
+      ],
+      "expected_behavior": "answer",
+      "expected_facts": ["one letter lower", "not below P"],
+      "must_not": ["no penalty"],
+      "clause": "Appendix V.5 / Clause 12.3(c)",
+      "grading_note": "Turn 1: supplementary exam. Turn 2 'any penalty?' must resolve to the supplementary grade and return one-letter-lower, not below P. Tests pronoun/context carry-over."
+    },
+    {
+      "id": "MT-03",
+      "bucket": "multi_turn",
+      "turns": [
+        "For a normal theory course, how are the marks split across the components?",
+        "What about a course that also has a lab?"
+      ],
+      "expected_behavior": "answer",
+      "expected_facts": ["CA 10", "Mid 20", "End-term 40", "Lab 30"],
+      "must_not": [],
+      "clause": "Clause 11.2(e)",
+      "grading_note": "Turn 1: CA 15%, Mid 25%, End 60%. Turn 2 must switch to the combined split: CA 10%, Mid 20%, End 40%, Lab 30%. Tests whether follow-up retrieves the right variant."
+    }
+  ]
+}

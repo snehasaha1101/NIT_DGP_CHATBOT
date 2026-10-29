@@ -1,0 +1,39 @@
+[
+  {
+    "id": "APP-01",
+    "pass": false,
+    "missing_expected": [],
+    "forbidden_present": [
+      "A",
+      "7"
+    ],
+    "answer": "**Grade: B (Good)**\n**Grade Points: 8**\n\nAccording to the 7-Scale Grade System table in Appendix-III, a score between 70 and 79 corresponds to the \"Good\" performance level, which is awarded the letter grade **B** and carries **8** grade points per credit unit."
+  },
+  {
+    "id": "APP-02",
+    "pass": false,
+    "missing_expected": [],
+    "forbidden_present": [
+      "fail",
+      "F"
+    ],
+    "answer": "**Yes, you pass, and your grade is P (Pass).**\n\nAccording to the 7-Scale Grade System table in Appendix-III, a score between 35 and 49 in a theory paper corresponds to the \"Pass\" performance level, which is awarded the grade **P** with a Grade Point of 5 per credit unit. The cut-off mark for an \"F\" (Fail) grade in theory papers is below 35."
+  },
+  {
+    "id": "APP-03",
+    "pass": false,
+    "missing_expected": [
+      "fail",
+      "0"
+    ],
+    "forbidden_present": [],
+    "answer": "You will be awarded an **'F' grade**.\n\nAccording to the regulations, the cut-off mark below which a student is assigned an 'F' grade for theory papers is **35**. Since your score of 33 is below this threshold, you are considered to have failed the theory component."
+  },
+  {
+    "id": "APP-04",
+    "pass": true,
+    "missing_expected": [],
+    "forbidden_present": [],
+    "answer": "Yes, there is a penalty. Your grade will be reduced by one grade.\n\n**Reason:** According to Regulation 10.7, for theory courses with attendance below 75% but not below 50%, a reduction of one grade is applied. Since your attendance is 55%, it falls within this range."
+  }
+]
